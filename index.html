@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aiuto partita · per RisiKo!</title>
+<meta name="description" content="Strumento non ufficiale che guida la preparazione di una partita di RisiKo! e aiuta durante i turni.">
+<meta name="theme-color" content="#1f3b4d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='6' fill='%23c8553d'/%3E%3Ccircle cx='11' cy='11' r='3' fill='white'/%3E%3Ccircle cx='21' cy='21' r='3' fill='white'/%3E%3Ccircle cx='16' cy='16' r='3' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="stile.css">
+</head>
+<body>
+<header class="testata">
+  <div class="marchio">
+    <span class="dado-icona" aria-hidden="true"></span>
+    <div>
+      <h1>Aiuto partita</h1>
+      <p class="sotto">per RisiKo!</p>
+    </div>
+  </div>
+  <div class="azioni-testata">
+    <button type="button" class="btn piccolo chiaro" id="apri-regole">Regole in breve</button>
+    <button type="button" class="btn piccolo fantasma" id="nuova-partita">Nuova partita</button>
+  </div>
+</header>
+
+<main id="app" aria-live="polite"></main>
+
+<dialog id="regole" aria-labelledby="titolo-regole">
+  <div class="dialogo">
+    <div class="dialogo-testa">
+      <h2 id="titolo-regole">Regole in breve</h2>
+      <button type="button" class="btn piccolo fantasma" id="chiudi-regole" aria-label="Chiudi">Chiudi</button>
+    </div>
+    <p class="nota">Promemoria scritto da noi, non il regolamento ufficiale: in caso di dubbio vale il libretto nella scatola.</p>
+
+    <h3>Preparazione</h3>
+    <ul>
+      <li>Da 3 a 6 giocatori, ognuno con un colore. Si gioca a turno in senso orario; il primo dell'ordine fa da mazziere.</li>
+      <li>Ognuno pesca un Obiettivo e lo tiene nascosto: è la condizione per vincere.</li>
+      <li>Le 42 carte Territori (senza jolly) si distribuiscono una per volta, partendo da chi siede alla destra del mazziere e girando in senso antiorario. Ognuno occupa i territori delle sue carte.</li>
+      <li>Armate a testa: 35 in 3, 30 in 4, 25 in 5, 20 in 6. Prima un'armata su ogni proprio territorio, poi a giro, 3 alla volta, fino a finirle.</li>
+      <li>Le carte Territori tornano al mazziere, si aggiungono i 2 jolly, si mischia e il mazzo resta coperto.</li>
+    </ul>
+
+    <h3>Il turno</h3>
+    <ol>
+      <li><strong>Rinforzi</strong>: un'armata ogni 3 territori (si arrotonda per difetto), più il bonus dei continenti interi, più l'eventuale tris giocato.</li>
+      <li><strong>Attacchi</strong>, quanti se ne vuole, solo verso territori confinanti.</li>
+      <li><strong>Spostamento</strong>: uno solo, facoltativo.</li>
+      <li><strong>Carta</strong>: se nel turno hai conquistato almeno un territorio, ne peschi una (una sola, anche se ne hai presi di più).</li>
+    </ol>
+
+    <h3>Continenti</h3>
+    <table class="tabella">
+      <thead><tr><th>Continente</th><th>Territori</th><th>Bonus</th></tr></thead>
+      <tbody id="tab-continenti"></tbody>
+    </table>
+
+    <h3>Tris di carte</h3>
+    <table class="tabella">
+      <thead><tr><th>Combinazione</th><th>Armate</th></tr></thead>
+      <tbody id="tab-tris"></tbody>
+    </table>
+    <p>In più, <strong>+2 armate</strong> per ogni carta del tris che mostra un territorio che occupi tu: quelle 2 vanno messe proprio lì.</p>
+
+    <h3>Combattimento</h3>
+    <ul>
+      <li>Chi attacca tira fino a 3 dadi, ma uno in meno delle armate che ha nel territorio: almeno una resta sempre a casa.</li>
+      <li>Chi difende sceglie quanti dadi usare (fino a 3, non più delle armate presenti) e lo dice prima che si lanci.</li>
+      <li>Si mettono in fila i dadi dal più alto al più basso e si confrontano a coppie. Per ogni coppia perde un'armata chi ha il numero più basso; <strong>a parità perde chi attacca</strong>. I dadi senza coppia non contano.</li>
+      <li>Se il territorio resta vuoto è conquistato: ci entri con tante armate quanti dadi hai tirato nell'ultimo lancio, e se vuoi ne porti altre. Questo non conta come spostamento.</li>
+    </ul>
+
+    <h3>Spostamento</h3>
+    <p>Una volta per turno puoi muovere armate da un tuo territorio a un altro tuo confinante, lasciando almeno un'armata in quello di partenza.</p>
+
+    <h3>Eliminazione</h3>
+    <p>Chi perde l'ultimo territorio esce dalla partita; chi l'ha eliminato prende tutte le sue carte Territori.</p>
+  </div>
+</dialog>
+
+<footer class="piede">
+  <p>Strumento non ufficiale, non collegato a Editrice Giochi. RisiKo! è un marchio dei rispettivi proprietari. Serve la scatola originale per giocare.</p>
+  <p>Codice con licenza MIT · <a href="https://github.com/chopin94/aiuto-risiko">sorgente</a></p>
+</footer>
+
+<script src="logica.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
