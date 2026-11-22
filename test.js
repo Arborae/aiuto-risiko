@@ -59,3 +59,12 @@ assert.deepStrictEqual([c.persiAttacco, c.persiDifesa], [1, 2]);
 assert.ok(L.lancia(3).every(d => d >= 1 && d <= 6));
 
 console.log('Tutte le prove passano.');
+
+// Probabilità di conquista: valori di controllo
+const pc = (a, d) => Math.round(L.probConquista(a, d) * 100);
+assert.deepStrictEqual([[3,1],[4,2],[6,3],[11,3],[7,4],[14,4],[20,6]].map(([a, d]) => pc(a, d)), [75, 66, 57, 90, 52, 90, 91]);
+assert.strictEqual(L.probConquista(1, 3), 0);
+for (const [na, nd] of [[1,1],[2,2],[3,3],[3,1]]) assert.ok(Math.abs(L.esitiLancio(na, nd).reduce((s, e) => s + e.p, 0) - 1) < 1e-12);
+assert.strictEqual(L.armatePerSoglia(3, 0.9), 11);
+assert.strictEqual(L.armatePerSoglia(4, 0.9), 14);
+console.log('Prove delle probabilità passano.');

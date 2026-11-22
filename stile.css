@@ -180,6 +180,22 @@ details.scheda > .corpo { padding: 0 16px 16px; }
 .tabella td:last-child, .tabella th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
 .tabella th { color: var(--tenue); font-weight: 600; font-size: .85rem; }
 
+/* probabilità */
+.scorre { overflow-x: auto; margin: 6px -4px; -webkit-overflow-scrolling: touch; }
+.tabella.prob { font-size: .8rem; min-width: 330px; }
+.tabella.prob th, .tabella.prob td { text-align: center; padding: 4px 2px; font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--carta); }
+.tabella.prob tbody th, .tabella.prob tfoot th { color: var(--tenue); }
+.tabella.prob td:last-child, .tabella.prob th:last-child { text-align: center; }
+.tabella.prob tfoot tr:first-child th { text-align: left; padding-top: 10px; }
+.tabella.prob .soglia td { font-weight: 700; }
+.p-verde { background: #b9e4c6; color: #0f3d20; }
+.p-giallo { background: #f6e39a; color: #4a3a00; }
+.p-arancio { background: #f7c08f; color: #5a2a00; }
+.p-grigio { background: #dcdcdc; color: #3a3a3a; }
+.pill { padding: 2px 12px; border-radius: 10px; }
+.legenda { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; font-size: .8rem; }
+.legenda span { padding: 2px 8px; border-radius: 6px; }
+
 dialog {
   border: 0; padding: 0; background: var(--carta); color: var(--inchiostro);
   width: min(640px, 100vw - 24px); max-height: calc(100vh - 32px); border-radius: var(--raggio);

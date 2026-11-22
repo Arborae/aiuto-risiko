@@ -237,7 +237,7 @@
       el('button', { type: 'button', class: 'btn largo', style: 'margin-top:10px', onclick: () => vai(fineTurno, true) },
         'Fine turno → ' + nomeDi(prossimo()))
     );
-    return [turno, schedaRinforzi(), schedaCombattimento(), schedaSpostamento(), schedaGiocatori()];
+    return [turno, schedaRinforzi(), schedaCombattimento(), schedaProbabilita(), schedaSpostamento(), schedaGiocatori()];
   }
 
   function prossimo() {
@@ -305,13 +305,17 @@
         el('p', { class: 'nota' }, 'Difesa'),
         fila(esito.difesa, 'dif', (i) => i < esito.dettagli.length && esito.dettagli[i].vinceAttacco),
         el('p', { class: 'esito' }, `L'attacco perde ${esito.persiAttacco}, la difesa perde ${esito.persiDifesa}.`),
-        esito.conquista ? el('div', { class: 'avvisi' }, `Territorio conquistato! Entra con almeno ${esito.attacco.length} armat${esito.attacco.length === 1 ? 'a' : 'e'} (i dadi dell'ultimo lancio); puoi portarne altre lasciandone almeno una dietro. Non conta come spostamento.`) : null
+        esito.conquista ? (() => {
+          const min = esito.attacco.length - esito.persiAttacco;
+          return el('div', { class: 'avvisi' }, `Territorio conquistato! Entra con almeno ${min} armat${min === 1 ? 'a' : 'e'} (i dadi dell'ultimo lancio meno quelle perse in quel lancio); se vuoi ne porti altre, lasciandone almeno una dove eri. Non conta come spostamento, e da lì puoi attaccare ancora.`);
+        })() : null
       ];
     }
     return sezione('combattimento', 'Combattimento e dadi',
       el('ul', {},
+        el('li', {}, el('strong', {}, 'Annuncia l\'attacco'), ' ad alta voce: da dove, contro quale territorio, con quanti dadi («Dal Brasile attacco l\'Africa del Nord con 3»). Se non lo fai, chi difende può chiederti di rifare il lancio.'),
         el('li', {}, 'Chi attacca: fino a 3 dadi, sempre almeno un\'armata a casa.'),
-        el('li', {}, 'Chi difende dichiara quanti dadi (fino a 3) prima del lancio.'),
+        el('li', {}, 'Chi difende dichiara quanti dadi usa (fino a 3) prima del lancio.'),
         el('li', {}, 'Si confrontano dal più alto al più basso; ', el('strong', {}, 'a parità vince la difesa'), '.')),
       el('div', { class: 'griglia2' },
         el('div', {}, el('label', {}, 'Armate in attacco'), contatore(d.att, 1, 99, (v) => ridisegna(() => { d.att = v; d.ultimo = null; }), 'armate in attacco')),
@@ -337,9 +341,46 @@
       el('h3', { style: 'margin-top:0' }, 'Spostamento'),
       el('p', {}, 'Uno solo per turno: da un tuo territorio a un altro tuo confinante, lasciando almeno un\'armata in quello da cui parti.'),
       el('h3', {}, 'Carte'),
-      el('p', {}, 'A fine turno, se hai conquistato almeno un territorio, peschi una carta (una sola). I tris si giocano all\'inizio del turno, con i rinforzi.'),
+      el('p', {}, 'A fine turno, se hai conquistato almeno un territorio, peschi una sola carta, anche se ne hai conquistati di più. I tris si giocano all\'inizio del turno, con i rinforzi.'),
       el('h3', {}, 'Eliminazione'),
       el('p', {}, 'Chi perde l\'ultimo territorio esce; chi l\'ha eliminato prende tutte le sue carte. Segnalo qui sotto in «Giocatori».'));
+  }
+
+  function classeProb(p) {
+    if (p >= 0.9) return 'p-verde';
+    if (p >= 0.75) return 'p-giallo';
+    if (p >= 0.5) return 'p-arancio';
+    return 'p-grigio';
+  }
+  const perc = (p) => Math.round(p * 100) + '%';
+
+  function schedaProbabilita() {
+    const pr = stato.partita.prob || (stato.partita.prob = { A: 6, D: 3 });
+    const DD = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const righe = [];
+    for (let A = 2; A <= 20; A++) {
+      righe.push(el('tr', {}, el('th', { scope: 'row' }, A),
+        DD.map(D => { const p = L.probConquista(A, D); return el('td', { class: classeProb(p) }, Math.round(p * 100)); })));
+    }
+    const soglia = (s) => el('tr', { class: 'soglia' }, el('th', { scope: 'row' }, s === 0.75 ? '≥75%' : '≥90%'),
+      DD.map(D => el('td', {}, L.armatePerSoglia(D, s))));
+    const p = L.probConquista(pr.A, pr.D);
+    return sezione('probabilita', 'Quante armate servono',
+      el('p', { class: 'nota' }, 'Probabilità di conquistare il territorio attaccando fino in fondo: sempre col massimo dei dadi, fino a conquistare o a restare con 1 armata. Chi difende usa sempre il massimo dei dadi e a parità vince.'),
+      el('div', { class: 'griglia2' },
+        el('div', {}, el('label', {}, 'Armate nel territorio d\'attacco (compresa quella che resta)'), contatore(pr.A, 2, 99, (v) => ridisegna(() => { pr.A = v; }), 'armate in attacco')),
+        el('div', {}, el('label', {}, 'Armate in difesa'), contatore(pr.D, 1, 99, (v) => ridisegna(() => { pr.D = v; }), 'armate in difesa'))),
+      el('div', { class: 'totale' }, el('span', { class: 'nota' }, `${pr.A} contro ${pr.D}: probabilità di conquista`), el('strong', { class: classeProb(p) + ' pill' }, perc(p))),
+      el('p', { class: 'nota', style: 'margin-top:12px' }, 'Righe: armate nel territorio d\'attacco. Colonne: difensori. Valori in percentuale.'),
+      el('div', { class: 'scorre' }, el('table', { class: 'tabella prob' },
+        el('thead', {}, el('tr', {}, el('th', { scope: 'col' }, 'A \\ D'), DD.map(D => el('th', { scope: 'col' }, D)))),
+        el('tbody', {}, righe),
+        el('tfoot', {}, el('tr', {}, el('th', { colspan: 11 }, 'Armate che servono per avere almeno…')), soglia(0.75), soglia(0.9)))),
+      el('div', { class: 'legenda' },
+        el('span', { class: 'p-verde' }, '≥90'), el('span', { class: 'p-giallo' }, '75–89'), el('span', { class: 'p-arancio' }, '50–74'), el('span', { class: 'p-grigio' }, '<50')),
+      el('ul', {},
+        el('li', {}, 'Chi difende fa bene a usare sempre il massimo dei dadi: ogni dado in meno regala probabilità a chi attacca.'),
+        el('li', {}, 'Contro 3 difensori, per stare tranquilli servono circa tre o quattro volte tante armate (11 per il 90%).')));
   }
 
   function schedaGiocatori() {

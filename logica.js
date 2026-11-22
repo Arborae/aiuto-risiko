@@ -114,11 +114,58 @@
     return dadi;
   }
 
+  // Probabilità di ogni esito di un lancio con na dadi in attacco e nd in difesa:
+  // elenco di { persiA, persiD, p }. Calcolata una volta enumerando tutti i dadi.
+  const cacheEsiti = {};
+  function esitiLancio(na, nd) {
+    const k = na + '-' + nd;
+    if (cacheEsiti[k]) return cacheEsiti[k];
+    const conti = {}, tot = Math.pow(6, na + nd);
+    const dadi = new Array(na + nd).fill(1);
+    for (let c = 0; c < tot; c++) {
+      let x = c;
+      for (let i = 0; i < dadi.length; i++) { dadi[i] = 1 + (x % 6); x = Math.floor(x / 6); }
+      const r = confronta(dadi.slice(0, na), dadi.slice(na));
+      const chiave = r.persiAttacco + '-' + r.persiDifesa;
+      conti[chiave] = (conti[chiave] || 0) + 1;
+    }
+    cacheEsiti[k] = Object.keys(conti).map(ch => {
+      const [a, d] = ch.split('-').map(Number);
+      return { persiA: a, persiD: d, p: conti[ch] / tot };
+    });
+    return cacheEsiti[k];
+  }
+
+  // Probabilità esatta di conquistare un territorio con D difensori partendo da
+  // A armate nel territorio d'attacco (compresa quella che deve restare), se si
+  // attacca sempre col massimo dei dadi, chi difende usa sempre il massimo e si
+  // continua finché non si conquista o resta 1 sola armata.
+  const cacheConquista = {};
+  function probConquista(A, D) {
+    if (D <= 0) return 1;
+    if (A <= 1) return 0;
+    const k = A + '-' + D;
+    if (k in cacheConquista) return cacheConquista[k];
+    let p = 0;
+    for (const e of esitiLancio(Math.min(3, A - 1), Math.min(3, D))) {
+      p += e.p * probConquista(A - e.persiA, D - e.persiD);
+    }
+    cacheConquista[k] = p;
+    return p;
+  }
+
+  // Le armate minime nel territorio d'attacco per avere almeno la soglia (0-1).
+  function armatePerSoglia(D, soglia, massimo) {
+    for (let A = 2; A <= (massimo || 200); A++) if (probConquista(A, D) >= soglia) return A;
+    return null;
+  }
+
   const api = {
     TOTALE_TERRITORI, DOTAZIONE, CONTINENTI, TRIS,
     ordineDistribuzione, territoriPerGiocatore, dotazione, armateDaPiazzare,
     prossimoConArmate, piazza, valoreTris, rinforzi,
-    dadiMassimiAttacco, dadiMassimiDifesa, confronta, lancia
+    dadiMassimiAttacco, dadiMassimiDifesa, confronta, lancia,
+    esitiLancio, probConquista, armatePerSoglia
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else radice.Logica = api;
